@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Loja de Plantas 🌱</title>
+  <link rel="icon" href="planta-removebg-preview.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+
+    h1 {
+      color: #2b7a2b;
+    }
+
+    section {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px #ccc;
+    }
+
+    input,
+    button,
+    textarea {
+      margin: 5px 0;
+      padding: 5px;
+    }
+
+    button {
+      background: #2b7a2b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 7px 12px;
+    }
+
+    button:hover {
+      background: #3a9a3a;
+    }
+
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    img {
+      height: 100px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><img src="planta-removebg-preview.png">Loja de Plantas de Darel</h1>
+
+  <section>
+    <h2>Listar todas as plantas</h2>
+    <button onclick="listarPlantas()">Listar</button>
+    <pre id="resultado-lista"></pre>
+  </section>
+
+  <section>
+    <h2>Buscar planta por ID</h2>
+    <input type="number" id="idBusca" placeholder="ID">
+    <button onclick="buscarPorId()">Buscar</button>
+    <pre id="resultado-busca"></pre>
+  </section>
+
+  <section>
+    <h2>Cadastrar nova planta</h2>
+    <input type="text" id="nomeNova" placeholder="Nome">
+    <input type="number" id="precoNova" placeholder="Preço" step="0.01">
+    <input type="number" id="estoqueNova" placeholder="Estoque">
+    <button onclick="criarPlanta()">Cadastrar</button>
+    <pre id="resultado-criar"></pre>
+  </section>
+
+  <section>
+    <h2>Cadastrar em lote (JSON)</h2>
+    <textarea id="loteJSON" rows="4" cols="50"
+      placeholder='[{"nome":"Planta A","preco":10,"estoque":5}]'></textarea><br>
+    <button onclick="cadastrarLote()">Cadastrar Lote</button>
+    <pre id="resultado-lote"></pre>
+  </section>
+
+  <section>
+    <h2>Atualizar planta</h2>
+    <input type="number" id="idAtualiza" placeholder="ID">
+    <input type="text" id="nomeAtualiza" placeholder="Novo Nome">
+    <input type="number" id="precoAtualiza" placeholder="Novo Preço" step="0.01">
+    <input type="number" id="estoqueAtualiza" placeholder="Novo Estoque">
+    <button onclick="atualizarPlanta()">Atualizar</button>
+    <pre id="resultado-atualiza"></pre>
+  </section>
+
+  <section>
+    <h2>Deletar planta</h2>
+    <input type="number" id="idDeleta" placeholder="ID">
+    <button onclick="deletarPlanta()">Deletar</button>
+    <pre id="resultado-deleta"></pre>
+  </section>
+
+  <section>
+    <h2>Filtrar por preço máximo</h2>
+    <input type="number" id="precoMaxFiltro" placeholder="Preço máximo" step="0.01">
+    <button onclick="filtrarPlantas()">Filtrar</button>
+    <pre id="resultado-filtro"></pre>
+  </section>
+
+  <section>
+    <h2>Outras informações</h2>
+    <button onclick="mostrarQuantidade()">Quantidade de Plantas Cadastradas</button>
+    <button onclick="mostrarPrimeira()">Primeira</button>
+    <button onclick="mostrarUltima()">Última</button>
+    <button onclick="mostrarEstatisticas()">Estatísticas</button>
+    <pre id="resultado-infos"></pre>
+  </section>
+
+  <script>
+    const BASE_URL = 'http://localhost:3000/plantas';
+
+    async function listarPlantas() {
+      const res = await fetch(BASE_URL);
+      document.getElementById('resultado-lista').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function buscarPorId() {
+      const id = document.getElementById('idBusca').value;
+      const res = await fetch(`${BASE_URL}/${id}`);
+      document.getElementById('resultado-busca').textContent = res.ok ? JSON.stringify(await res.json(), null, 2) : 'Planta não encontrada';
+    }
+
+    async function criarPlanta() {
+      const body = {
+        nome: document.getElementById('nomeNova').value,
+        preco: parseFloat(document.getElementById('precoNova').value),
+        estoque: parseInt(document.getElementById('estoqueNova').value)
+      };
+      const res = await fetch(BASE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      document.getElementById('resultado-criar').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function cadastrarLote() {
+      const jsonText = document.getElementById('loteJSON').value;
+      try {
+        const body = JSON.parse(jsonText);
+        const res = await fetch(`${BASE_URL}/lote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        document.getElementById('resultado-lote').textContent = JSON.stringify(await res.json(), null, 2);
+      } catch (err) {
+        document.getElementById('resultado-lote').textContent = 'JSON inválido';
+      }
+    }
+
+    async function atualizarPlanta() {
+      const id = document.getElementById('idAtualiza').value;
+      const body = {
+        nome: document.getElementById('nomeAtualiza').value,
+        preco: parseFloat(document.getElementById('precoAtualiza').value),
+        estoque: parseInt(document.getElementById('estoqueAtualiza').value)
+      };
+      const res = await fetch(`${BASE_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      document.getElementById('resultado-atualiza').textContent = res.ok ? JSON.stringify(await res.json(), null, 2) : 'Erro ao atualizar';
+    }
+
+    async function deletarPlanta() {
+      const id = document.getElementById('idDeleta').value;
+      const res = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
+      document.getElementById('resultado-deleta').textContent = res.ok ? JSON.stringify(await res.json(), null, 2) : 'Planta não encontrada';
+    }
+
+    async function filtrarPlantas() {
+      const preco = document.getElementById('precoMaxFiltro').value;
+      const res = await fetch(`${BASE_URL}/filtro?precoMax=${preco}`);
+      document.getElementById('resultado-filtro').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function mostrarQuantidade() {
+      const res = await fetch(`${BASE_URL}/quantidade`);
+      document.getElementById('resultado-infos').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function mostrarPrimeira() {
+      const res = await fetch(`${BASE_URL}/primeira`);
+      document.getElementById('resultado-infos').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function mostrarUltima() {
+      const res = await fetch(`${BASE_URL}/ultima`);
+      document.getElementById('resultado-infos').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function mostrarEstatisticas() {
+      const res = await fetch(`${BASE_URL}/estatisticas`);
+      document.getElementById('resultado-infos').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+  </script>
+</body>
+
+</html>
