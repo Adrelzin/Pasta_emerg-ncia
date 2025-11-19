@@ -1,81 +1,186 @@
 const express = require('express');
-const cors = require('cors'); 
+const exphbs = require('express-handlebars');
 const app = express();
+const port = 3000;
 
-app.use(cors()); 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true}));
 
-let plantas = [
-  { id: 1, nome: 'Samambaia', preco: 25.00, estoque: 10 },
-  { id: 2, nome: 'Cacto', preco: 15.50, estoque: 5 },
-  { id: 3, nome: 'Orquídea', preco: 45.00, estoque: 3 },
-  { id: 4, nome: 'Suculenta', preco: 12.00, estoque: 20 },
-  { id: 5, nome: 'Bromélia', preco: 30.00, estoque: 7 }
+app.engine('handlebars', exphbs.engine({ defaultLayout: false}));
+app.set('view engine', 'handlebars');
+app.set('views', './views');
+
+let materiaisEscolares = [
+    { id: 1, nome: "Caderno 10 matérias", quantidade: 50},
+    { id: 2, nome: "Lápis HB", quantidade: 200},
+    { id: 3, nome: "Borracha branca", quantidade: 100},
 ];
 
-let idCounter = 6; 
+let professores = [
+    { id: 1, nome: "Maria Silva", disciplina: "Matemática", email: "maria@escola.com" },
+    { id: 2, nome: "João Santos", disciplina: "Português", email: "joao@escola.com" },
+    { id: 3, nome: "Ana Costa", disciplina: "História", email: "ana@escola.com" },
+];
 
-app.get('/plantas', (req, res) => {
-  res.json(plantas);
+let turmas = [
+    { id: 1, nome: "1º Ano A", turno: "Manhã", capacidade: 30 },
+    { id: 2, nome: "1º Ano B", turno: "Tarde", capacidade: 28 },
+    { id: 3, nome: "2º Ano A", turno: "Manhã", capacidade: 32 },
+];
+
+app.get('/', (req, res) => res.render('home'));
+
+app.get('/materiais', (req, res) => {
+    res.render('listarMateriais', { materiais: materiaisEscolares });
 });
 
-app.get('/plantas/filtro', (req, res) => {
-  const precoMax = parseFloat(req.query.precoMax);
-  const filtradas = plantas.filter(p => p.preco <= precoMax);
-  res.json(filtradas);
+app.get('/materiais/novo', (req, res) => res.render('cadastrarMaterial'));
+
+app.get('/materiais/ver/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const material = materiaisEscolares.find(m => m.id === id);
+    if (!material) return res.status(404).send('Material não encontrado');
+    res.render('detalharMaterial', { material });
 });
 
-app.get('/plantas/quantidade', (req, res) => {
-  res.json({ quantidade: plantas.length });
+app.get('/materiais/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const material = materiaisEscolares.find(m => m.id === id);
+    if (!material) return res.status(404).send('Material não encontrado');
+    res.render('editarMaterial', { material, materiais: materiaisEscolares});
 });
 
-app.get('/plantas/primeira', (req, res) => {
-  res.json(plantas[0] || {});
+app.post('/materiais', (req, res) => {
+    const { nome, quantidade } = req.body;
+    const novoMaterial = { 
+        id: materiaisEscolares.length + 1, 
+        nome, 
+        quantidade: parseInt(quantidade),
+    };
+    materiaisEscolares.push(novoMaterial);
+    res.redirect('/materiais');
 });
 
-app.get('/plantas/ultima', (req, res) => {
-  res.json(plantas[plantas.length - 1] || {});
+app.post('/materiais/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const material = materiaisEscolares.find(m => m.id === id);
+    if (!material) return res.status(404).send('Material não encontrado');
+    
+    material.nome = req.body.nome;
+    material.quantidade = parseInt(req.body.quantidade);
+    res.redirect('/materiais');
 });
 
-app.get('/plantas/estatisticas', (req, res) => {
-  if (plantas.length === 0) return res.json({});
-  const precoMedio = plantas.reduce((acc, p) => acc + p.preco, 0) / plantas.length;
-  const estoqueTotal = plantas.reduce((acc, p) => acc + (p.estoque || 0), 0);
-  res.json({ precoMedio, estoqueTotal });
+app.post('/materiais/excluir/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = materiaisEscolares.findIndex(m => m.id === id);
+    if (index === -1) return res.status(404).send('Material não encontrado');
+    materiaisEscolares.splice(index, 1);
+    res.redirect('/materiais');
 });
 
-app.get('/plantas/:id', (req, res) => {
-  const planta = plantas.find(p => p.id === parseInt(req.params.id));
-  if (!planta) return res.status(404).send('Planta não encontrada');
-  res.json(planta);
+app.get('/professores', (req, res) => {
+    res.render('listarProfessores', { professores });
 });
 
-app.post('/plantas', (req, res) => {
-  const nova = { id: idCounter++, ...req.body };
-  plantas.push(nova);
-  res.status(201).json(nova);
+app.get('/professores/novo', (req, res) => res.render('cadastrarProfessor'));
+
+app.get('/professores/ver/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const professor = professores.find(p => p.id === id);
+    if (!professor) return res.status(404).send('Professor não encontrado');
+    res.render('detalharProfessor', { professor });
 });
 
-app.post('/plantas/lote', (req, res) => {
-  const novas = req.body.map(p => ({ id: idCounter++, ...p }));
-  plantas.push(...novas);
-  res.status(201).json(novas);
+app.get('/professores/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const professor = professores.find(p => p.id === id);
+    if (!professor) return res.status(404).send('Professor não encontrado');
+    res.render('editarProfessor', { professor, professores: professores});
 });
 
-app.put('/plantas/:id', (req, res) => {
-  const index = plantas.findIndex(p => p.id === parseInt(req.params.id));
-  if (index === -1) return res.status(404).send('Planta não encontrada');
-  plantas[index] = { id: plantas[index].id, ...req.body };
-  res.json(plantas[index]);
+app.post('/professores', (req, res) => {
+    const { nome, disciplina, email } = req.body;
+    const novoProfessor = { 
+        id: professores.length + 1, 
+        nome, 
+        disciplina, 
+        email 
+    };
+    professores.push(novoProfessor);
+    res.redirect('/professores');
 });
 
-app.delete('/plantas/:id', (req, res) => {
-  const index = plantas.findIndex(p => p.id === parseInt(req.params.id));
-  if (index === -1) return res.status(404).send('Planta não encontrada');
-  const deletada = plantas.splice(index, 1);
-  res.json(deletada[0]);
+app.post('/professores/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const professor = professores.find(p => p.id === id);
+    if (!professor) return res.status(404).send('Professor não encontrado');
+    
+    professor.nome = req.body.nome;
+    professor.disciplina = req.body.disciplina;
+    professor.email = req.body.email;
+    res.redirect('/professores');
 });
 
-app.listen(3000, () => {
-  console.log('API de plantas rodando na porta 3000');
+app.post('/professores/excluir/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = professores.findIndex(p => p.id === id);
+    if (index === -1) return res.status(404).send('Professor não encontrado');
+    professores.splice(index, 1);
+    res.redirect('/professores');
+});
+
+app.get('/turmas', (req, res) => {
+    res.render('listarTurmas', { turmas });
+});
+
+app.get('/turmas/nova', (req, res) => res.render('cadastrarTurma'));
+
+app.get('/turmas/ver/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const turma = turmas.find(t => t.id === id);
+    if (!turma) return res.status(404).send('Turma não encontrada');
+    res.render('detalharTurma', { turma });
+});
+
+app.get('/turmas/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const turma = turmas.find(t => t.id === id);
+    if (!turma) return res.status(404).send('Turma não encontrada');
+    res.render('editarTurma', { turma });
+});
+
+app.post('/turmas', (req, res) => {
+    const { nome, turno, capacidade } = req.body;
+    const novaTurma = { 
+        id: turmas.length + 1, 
+        nome, 
+        turno, 
+        capacidade: parseInt(capacidade) 
+    };
+    turmas.push(novaTurma);
+    res.redirect('/turmas');
+});
+
+app.post('/turmas/:id/editar', (req, res) => {
+    const id = parseInt(req.params.id);
+    const turma = turmas.find(t => t.id === id);
+    if (!turma) return res.status(404).send('Turma não encontrada');
+    
+    turma.nome = req.body.nome;
+    turma.turno = req.body.turno;
+    turma.capacidade = parseInt(req.body.capacidade);
+    res.redirect('/turmas');
+});
+
+app.post('/turmas/excluir/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = turmas.findIndex(t => t.id === id);
+    if (index === -1) return res.status(404).send('Turma não encontrada');
+    turmas.splice(index, 1);
+    res.redirect('/turmas');
+});
+
+app.listen(port, () => {
+    console.log(`Servidor em execução: http://localhost:${port}`);
 });

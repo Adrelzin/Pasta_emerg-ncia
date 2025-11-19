@@ -1,0 +1,26 @@
+<html>
+<head></head>
+<body>
+    <h2>Editar Professor</h2>
+
+    <form action="/professores/{{professor.id}}/editar" method="POST">
+        <label for="nome">Professor:</label>
+        <select name="nome" id="nome" required>
+            {{#each professores}}
+                <option value="{{this.nome}}">{{this.nome}}</option>
+            {{/each}}
+        </select>
+
+        <label for="disciplina">Disciplina:</label>
+        <input type="text" name="disciplina" value="{{professor.disciplina}}" required>
+
+        <button type="submit">Salvar</button>
+    </form>
+
+    <a href="/materiais">Voltar</a>
+
+    <script>
+        document.getElementById('nome').value = "{{professor.nome}}";
+    </script>
+</body>
+</html>

@@ -1,8 +1,18 @@
 {
+  "name": "handlebars",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "animejs": "^4.2.1",
-    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "nodemon": "^3.1.10"
-  }
+    "express-handlebars": "^8.0.3",
+    "nodemon": "^3.1.11"
+  },
+  "description": "npm innit npm install express express-handlebars npm install -y nodemon"
 }

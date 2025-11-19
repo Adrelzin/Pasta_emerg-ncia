@@ -1,0 +1,25 @@
+<html>
+<head>
+</head>
+<body>
+    <h2>Lista de materiais</h2>
+
+    <ul>
+        {{#each materiais}}
+        <li>
+            <a href="/materiais/ver/{{id}}">{{nome}}</a> - Quantidade: {{quantidade}}
+            <a href="/materiais/{{id}}/editar">editar</a>
+
+            <form action="/materiais/excluir/{{id}}" method="POST" style="display:inline;">
+                <button type="submit" onclick="return confirm('Confirma exclusão?')">
+                    excluir
+                </button>
+            </form>
+        </li>
+        {{/each}}
+    </ul>
+
+    <a href="/materiais/novo">Cadastrar novo material</a>
+    <a href="/">Voltar</a>
+</body>
+</html>

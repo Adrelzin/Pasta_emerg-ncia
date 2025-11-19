@@ -1,0 +1,21 @@
+<html>
+<head></head>
+<body>
+    <h2>Editar Turma</h2>
+
+    <form action="/turmas/{{turma.id}}/editar" method="POST">
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" id="nome" value="{{turma.nome}}" required>
+
+        <label for="turno">Turno:</label>
+        <input type="text" name="turno" id="turno" value="{{turma.turno}}" required>
+
+        <label for="capacidade">Capacidade:</label>
+        <input type="number" name="capacidade" id="capacidade" value="{{turma.capacidade}}" required>
+
+        <button type="submit">Salvar</button>
+    </form>
+
+    <a href="/turmas">Voltar</a>
+</body>
+</html>

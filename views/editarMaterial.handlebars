@@ -1,0 +1,26 @@
+<html>
+<head></head>
+<body>
+    <h2>Editar Material</h2>
+
+    <form action="/materiais/{{material.id}}/editar" method="POST">
+        <label for="nome">Material:</label>
+        <select name="nome" id="nome" required>
+            {{#each materiais}}
+                <option value="{{this.nome}}">{{this.nome}}</option>
+            {{/each}}
+        </select>
+
+        <label for="quantidade">Quantidade:</label>
+        <input type="number" name="quantidade" value="{{material.quantidade}}" required>
+
+        <button type="submit">Salvar</button>
+    </form>
+
+    <a href="/materiais">Voltar</a>
+
+    <script>
+        document.getElementById('nome').value = "{{material.nome}}";
+    </script>
+</body>
+</html>
